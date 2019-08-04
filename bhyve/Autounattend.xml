@@ -47,10 +47,6 @@
             </DiskConfiguration>
             <UserData>
                 <AcceptEula>true</AcceptEula>
-                <ProductKey>
-                    <Key></Key>
-                    <WillShowUI>OnError</WillShowUI>
-                </ProductKey>
             </UserData>
             <ImageInstall>
                 <OSImage>

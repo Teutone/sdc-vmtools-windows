@@ -1,5 +1,6 @@
 Find this ISO at https://download.joyent.com/pub/vmtools/winsetup*
 Or on OSX make your own:
+# EDIT: removed <ProductKey> XML tag from Autounattend.xml to make eval ISOs work (License Terms not found error)
 # git clone https://github.com/joyent/sdc-vmtools-windows
 # hdiutil makehybrid -o winsetup.iso sdc-vmtools-windows/bhyve/ -iso -joliet
 
@@ -9,10 +10,9 @@ for disk and networking, SAC console, ICMP ping, and RDP enabled.
 On a SmartOS machine with the newest platform given to you by Joyent,
 first set some variables for the bhyve VM used for Windows installation:
 
-export WINDOWS_INSTALL_CD=/zones/win2016eval.iso
-export WINDOWS_DRIVER_CD=/zones/winsetup.iso
+export WINDOWS_INSTALL_CD=/opt/custom/windows/win2016eval.iso
+export WINDOWS_DRIVER_CD=/opt/custom/windows/winsetup.iso
 
-zfs create -V 15G zones/windows
 next:
 zfs create -V 80G zones/windows
 
@@ -98,7 +98,7 @@ Using the SHA1 hash and byte size from ls -l, fill in windows.imgmanifest:
 
 Then:
 
-imgadm install -m /zones/windows.imgmanifest -f /zones/windows.zvol
+imgadm install -m /opt/custom/windows/windows.imgmanifest -f /zones/windows.zvol
 
 You now have an imgadm image which can be used with vmadm; you can delete
 windows.imgmanifest and windows.zvol. If you have a bunch of older images in
@@ -127,7 +127,8 @@ Here's a JSON useful for 'vmadm create' which uses the above image:
     "netmask": "255.255.255.0",
     "gateway": "10.88.88.2"
   } ],
-  "resolvers": ["1.1.1.1", "1.0.0.1"]
+  "resolvers": ["1.1.1.1", "1.0.0.1"],
+  "vnc_port": 5901
 }
 
 Put that in a JSON file (e.g. windows.json), and adjust the networking to taste.
@@ -138,3 +139,7 @@ vmadm start <new VM's UUID>
 
 RDP should become available once Windows boots up. Alternatively, use VNC,
 or 'vmadm console' to access Windows' SAC.
+
+RDP available via external NIC. If put only on admin NIC, use VNC with socat like this:
+
+socat TCP-LISTEN:5500 EXEC:'ssh cn06 "socat STDIO UNIX-CONNECT:/zones/cb733c87-5b5f-e0d5-feef-ff42c6519117/root/tmp/vm.vnc"'
